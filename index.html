@@ -98,8 +98,6 @@
   }
   button.ctl:hover { transform: scale(1.06); }
   button.ctl:active { transform: scale(.96); }
-  button.stop { width: 32px; height: 32px; background: transparent; color: var(--sea); border: 1.5px solid var(--line); }
-  button.stop:hover { background: var(--foam); }
   button.ctl svg { width: 18px; height: 18px; fill: currentColor; }
   .track .ico-pause { display: none; }
   .track.playing .ico-play { display: none; }
@@ -140,15 +138,18 @@
 
   /* ---------- Мобильные ---------- */
   @media (max-width: 720px) {
-    .board { --h: 290px; grid-template-columns: minmax(0, 1fr) minmax(0, 0.55fr); gap: 10px; }
-    .panel { padding: 2px 12px; }
+    .board { --h: 290px; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr); gap: 10px; }
+    .panel { padding: 2px 10px; }
     .track { gap: 8px; }
     .num { width: 26px; height: 26px; font-size: .8rem; }
     button.ctl { width: 36px; height: 36px; }
-    button.stop { width: 28px; height: 28px; }
+    input.seek { min-width: 30px; }
     .time { display: none; }
-    .lang { font-size: .88rem; gap: 8px; overflow-wrap: anywhere; }
+    .lang { font-size: .85rem; gap: 8px; overflow-wrap: break-word; }
     .let { width: 22px; height: 22px; font-size: .75rem; }
+  }
+  @media (max-width: 380px) {
+    .lang { font-size: .78rem; gap: 6px; }
   }
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
@@ -178,7 +179,7 @@
 const TASKS = [
   {
     title: "Задание 1",
-    statement: "Ниже представлены записи речи на разных языках России. Соотнесите записи с языками, на которых в них говорят. Ответ запишите в формате <samp>1А, 2Б<samp\>.",
+    statement: "Ниже представлены записи речи на разных языках России. Соотнесите записи с языками, на которых в них говорят. Ответ запишите в формате <samp>1А, 2Б</samp>.",
     audio: [
       "audio/task1-1.mp3",
       "audio/task1-2.mp3",
@@ -190,7 +191,7 @@ const TASKS = [
   },
   {
     title: "Задание 2: языки мира",
-    statement: "Ниже представлены песни на разных языках мира. Соотнесите песни с языками, на которых их поют. Ответ запишите в формате <samp>1А, 2Б<samp\>.",
+    statement: "Ниже представлены песни на разных языках мира. Соотнесите песни с языками, на которых их поют. Ответ запишите в формате <samp>1А, 2Б</samp>.",
     audio: [
       "audio/task2-1.mp3",
       "audio/task2-2.mp3",
@@ -205,7 +206,6 @@ const TASKS = [
 
 const ICON_PLAY  = '<svg class="ico-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
 const ICON_PAUSE = '<svg class="ico-pause" viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>';
-const ICON_STOP  = '<svg viewBox="0 0 24 24"><path d="M7 7h10v10H7z"/></svg>';
 
 const fmt = s => {
   if (!isFinite(s)) return "0:00";
@@ -222,8 +222,7 @@ function buildTrack(src, n) {
     `<span class="num">${n}</span>` +
     `<button class="ctl play" type="button" aria-label="Воспроизвести / пауза, запись ${n}">${ICON_PLAY}${ICON_PAUSE}</button>` +
     `<input class="seek" type="range" min="0" max="1000" value="0" aria-label="Перемотка, запись ${n}">` +
-    `<span class="time">0:00 / 0:00</span>` +
-    `<button class="ctl stop" type="button" aria-label="Стоп, запись ${n}">${ICON_STOP}</button>`;
+    `<span class="time">0:00 / 0:00</span>`;
 
   const audio = new Audio();
   audio.preload = "metadata";
@@ -231,7 +230,6 @@ function buildTrack(src, n) {
   allAudio.push(audio);
 
   const play = el.querySelector(".play");
-  const stop = el.querySelector(".stop");
   const seek = el.querySelector(".seek");
   const time = el.querySelector(".time");
 
@@ -244,7 +242,6 @@ function buildTrack(src, n) {
   };
 
   play.addEventListener("click", () => audio.paused ? audio.play() : audio.pause());
-  stop.addEventListener("click", () => { audio.pause(); audio.currentTime = 0; paint(); });
   seek.addEventListener("input", () => {
     if (audio.duration) audio.currentTime = (seek.value / 1000) * audio.duration;
     paint();
