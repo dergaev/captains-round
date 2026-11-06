@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Бои капитанов</title>
+<style>
+  :root {
+    --sea: #222327;
+    --crimson: #9c1124;
+    --foam: #f2f3f5;
+    --card: #ffffff;
+    --line: #d9dce1;
+    --signal: #9c1124;
+    --flag: #222327;
+    --muted: #5f636b;
+    --font: "HelveticaNeueСyr", Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: var(--font);
+    color: var(--sea);
+    background: var(--foam);
+    line-height: 1.55;
+  }
+
+  /* ---------- Шапка ---------- */
+  header {
+    background: var(--crimson);
+    color: #fff;
+    padding: clamp(48px, 9vw, 110px) 24px clamp(40px, 7vw, 84px);
+    position: relative;
+    overflow: hidden;
+  }
+  header .wrap { max-width: 980px; margin: 0 auto; }
+  h1 {
+    margin: 0;
+    font-family: var(--font);
+    font-weight: 700;
+    font-size: clamp(2.4rem, 8.5vw, 5.6rem);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+  }
+
+  /* ---------- Основное ---------- */
+  main { max-width: 980px; margin: 0 auto; padding: 48px 20px 80px; }
+  section.task { margin-bottom: 56px; }
+  h2 {
+    margin: 0 0 8px;
+    font-family: var(--font);
+    font-weight: 700;
+    font-size: clamp(1.3rem, 3.4vw, 1.9rem);
+    letter-spacing: -0.01em;
+  }
+  .statement {
+    margin: 0 0 22px;
+    max-width: 700ch;
+    color: var(--muted);
+    font-size: 1.05rem;
+  }
+  .board {
+    --h: 340px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+  }
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 4px 22px;
+    height: var(--h);
+    display: flex;
+    flex-direction: column;
+  }
+  .panel > * { flex: 1 1 0; min-height: 0; border-bottom: 1px solid var(--line); }
+  .panel > *:last-child { border-bottom: 0; }
+  .panel.langs { background: var(--crimson); border-color: var(--crimson); color: #fff; }
+  .panel.langs > * { border-bottom-color: rgba(255,255,255,.18); }
+  .panel.langs > *:last-child { border-bottom: 0; }
+
+  /* ---------- Плеер ---------- */
+  .track { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .num {
+    flex: none; width: 30px; height: 30px; border-radius: 50%;
+    display: grid; place-items: center;
+    font-weight: 600; font-size: .9rem;
+    background: var(--sea); color: #fff;
+  }
+  button.ctl {
+    flex: none; width: 40px; height: 40px; border-radius: 50%;
+    border: 0; cursor: pointer; display: grid; place-items: center;
+    background: var(--signal); color: #fff;
+    transition: transform .12s ease, background .12s ease;
+  }
+  button.ctl:hover { transform: scale(1.06); }
+  button.ctl:active { transform: scale(.96); }
+  button.stop { width: 32px; height: 32px; background: transparent; color: var(--sea); border: 1.5px solid var(--line); }
+  button.stop:hover { background: var(--foam); }
+  button.ctl svg { width: 18px; height: 18px; fill: currentColor; }
+  .track .ico-pause { display: none; }
+  .track.playing .ico-play { display: none; }
+  .track.playing .ico-pause { display: block; }
+  .track.playing .num { background: var(--signal); }
+
+  input.seek {
+    --p: 0%;
+    flex: 1 1 auto; min-width: 60px; height: 6px; margin: 0;
+    -webkit-appearance: none; appearance: none; border-radius: 3px; cursor: pointer;
+    background: linear-gradient(90deg, var(--sea) var(--p), var(--line) var(--p));
+  }
+  input.seek::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+    background: var(--sea); border: 3px solid #fff; box-shadow: 0 0 0 1px var(--sea);
+  }
+  input.seek::-moz-range-thumb {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--sea); border: 3px solid #fff; box-shadow: 0 0 0 1px var(--sea);
+  }
+  .time { flex: none; width: 82px; text-align: right; font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  /* ---------- Языки ---------- */
+  .lang {
+    display: flex; align-items: center; gap: 12px;
+    font-weight: 500; font-size: 1rem; line-height: 1.2;
+  }
+  .let {
+    flex: none; width: 24px; height: 24px; border-radius: 50%;
+    display: grid; place-items: center;
+    font-size: .8rem; font-weight: 700;
+    background: #fff; color: var(--crimson);
+  }
+
+  :focus-visible { outline: 3px solid var(--flag); outline-offset: 2px; }
+
+  footer { text-align: center; color: var(--muted); font-size: .85rem; padding-bottom: 40px; }
+
+  /* ---------- Мобильные ---------- */
+  @media (max-width: 720px) {
+    .board { --h: 290px; grid-template-columns: minmax(0, 1fr) minmax(0, 0.55fr); gap: 10px; }
+    .panel { padding: 2px 12px; }
+    .track { gap: 8px; }
+    .num { width: 26px; height: 26px; font-size: .8rem; }
+    button.ctl { width: 36px; height: 36px; }
+    button.stop { width: 28px; height: 28px; }
+    .time { display: none; }
+    .lang { font-size: .88rem; gap: 8px; overflow-wrap: anywhere; }
+    .let { width: 22px; height: 22px; font-size: .75rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    button.ctl { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>Бой капитанов</h1>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<footer></footer>
+
+<script>
+/* ============================================================
+   НАСТРОЙКИ — меняйте только этот блок.
+   statement: описание задания (у каждого задания своё)
+   audio: пути к аудиофайлам (положите их в папку audio/ рядом с index.html)
+   langs: названия языков (их может быть больше, чем записей; порядок не связан с записями)
+   ============================================================ */
+const TASKS = [
+  {
+    title: "Задание 1",
+    statement: "Ниже представлены записи речи на разных языках России. Соотнесите записи с языками, на которых в них говорят. Ответ запишите в формате <samp>1А, 2Б<samp\>.",
+    audio: [
+      "audio/task1-1.mp3",
+      "audio/task1-2.mp3",
+      "audio/task1-3.mp3",
+      "audio/task1-4.mp3",
+      "audio/task1-5.mp3"
+    ],
+    langs: ["Эвенский", "Адыгейский", "Корякский", "", "Татарский"]
+  },
+  {
+    title: "Задание 2: языки мира",
+    statement: "Ниже представлены песни на разных языках мира. Соотнесите песни с языками, на которых их поют. Ответ запишите в формате <samp>1А, 2Б<samp\>.",
+    audio: [
+      "audio/task2-1.mp3",
+      "audio/task2-2.mp3",
+      "audio/task2-3.mp3",
+      "audio/task2-4.mp3",
+      "audio/task2-5.mp3"
+    ],
+    langs: ["Иврит", "Армянский", "Кхоса", "Вьетнамский", "Португальский"]
+  }
+];
+/* ============================================================ */
+
+const ICON_PLAY  = '<svg class="ico-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+const ICON_PAUSE = '<svg class="ico-pause" viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>';
+const ICON_STOP  = '<svg viewBox="0 0 24 24"><path d="M7 7h10v10H7z"/></svg>';
+
+const fmt = s => {
+  if (!isFinite(s)) return "0:00";
+  const m = Math.floor(s / 60), r = Math.floor(s % 60);
+  return m + ":" + String(r).padStart(2, "0");
+};
+
+const allAudio = [];
+
+function buildTrack(src, n) {
+  const el = document.createElement("div");
+  el.className = "track";
+  el.innerHTML =
+    `<span class="num">${n}</span>` +
+    `<button class="ctl play" type="button" aria-label="Воспроизвести / пауза, запись ${n}">${ICON_PLAY}${ICON_PAUSE}</button>` +
+    `<input class="seek" type="range" min="0" max="1000" value="0" aria-label="Перемотка, запись ${n}">` +
+    `<span class="time">0:00 / 0:00</span>` +
+    `<button class="ctl stop" type="button" aria-label="Стоп, запись ${n}">${ICON_STOP}</button>`;
+
+  const audio = new Audio();
+  audio.preload = "metadata";
+  audio.src = src;
+  allAudio.push(audio);
+
+  const play = el.querySelector(".play");
+  const stop = el.querySelector(".stop");
+  const seek = el.querySelector(".seek");
+  const time = el.querySelector(".time");
+
+  const paint = () => {
+    const d = audio.duration, t = audio.currentTime;
+    const p = d ? (t / d) * 1000 : 0;
+    seek.value = p;
+    seek.style.setProperty("--p", (p / 10) + "%");
+    time.textContent = fmt(t) + " / " + fmt(d);
+  };
+
+  play.addEventListener("click", () => audio.paused ? audio.play() : audio.pause());
+  stop.addEventListener("click", () => { audio.pause(); audio.currentTime = 0; paint(); });
+  seek.addEventListener("input", () => {
+    if (audio.duration) audio.currentTime = (seek.value / 1000) * audio.duration;
+    paint();
+  });
+
+  audio.addEventListener("play", () => {
+    allAudio.forEach(a => { if (a !== audio) a.pause(); });   // играет только одна запись
+    el.classList.add("playing");
+  });
+  audio.addEventListener("pause", () => el.classList.remove("playing"));
+  audio.addEventListener("ended", () => { el.classList.remove("playing"); audio.currentTime = 0; paint(); });
+  audio.addEventListener("timeupdate", paint);
+  audio.addEventListener("loadedmetadata", paint);
+
+  return el;
+}
+
+const app = document.getElementById("app");
+
+TASKS.forEach(task => {
+  const sec = document.createElement("section");
+  sec.className = "task";
+  sec.innerHTML = `<h2>${task.title}</h2><p class="statement">${task.statement}</p>`;
+
+  const board = document.createElement("div");
+  board.className = "board";
+
+  const audioPanel = document.createElement("div");
+  audioPanel.className = "panel audio-panel";
+  const langPanel = document.createElement("div");
+  langPanel.className = "panel langs";
+
+  task.audio.forEach((src, i) => {
+    audioPanel.appendChild(buildTrack(src, i + 1));
+  });
+  const LETTERS = "АБВГДЕЖЗИКЛ".split("");
+  task.langs.forEach((name, i) => {
+    const lang = document.createElement("div");
+    lang.className = "lang";
+    lang.innerHTML = `<span class="let">${LETTERS[i]}</span><span></span>`;
+    lang.lastChild.textContent = name;
+    langPanel.appendChild(lang);
+  });
+
+  board.append(audioPanel, langPanel);
+  sec.appendChild(board);
+  app.appendChild(sec);
+});
+</script>
+</body>
+</html>
