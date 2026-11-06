@@ -1,1 +1,1 @@
-web page for the captains round / vzlyot programm in linguistics
+web page for the captains round. vzlyot program in linguistics. november 2026.
